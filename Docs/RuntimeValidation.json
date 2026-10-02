@@ -29,23 +29,16 @@
     "ALL_PASSED"
   ],
   "screenshots": [
-    "UE_01_East_Canyon_Daylight.png",
-    "UE_02_Snake_Path_Daylight.png",
-    "UE_03_East_Canyon_Golden_Hour.png",
-    "UE_04_Library_Plaza.png",
-    "UE_05_East_Canyon_Blue_Hour.png",
-    "UE_06_Interactive_Walk.png",
-    "UE_07_Aerial_Site.png",
-    "UE_08_Snake_Coil_Continuity.png"
-  ],
-  "previous_visible_window_checks": [
-    "view 2: Snake Path",
-    "F: grounded walking",
-    "mouse: view changed",
-    "L: golden hour and blue hour"
+    "Library-Daylight.png",
+    "Library-Golden-Hour.png",
+    "South-Elevation.png",
+    "Library-Blue-Hour.png",
+    "Walking.png",
+    "Site-Aerial.png",
+    "Snake-Path.png"
   ],
   "current_scene_visual_review": [
-    "Blender 05_SnakePath_Coil.png: complete garden coil, continuous contact, no broken stub",
-    "Unreal UE_08_Snake_Coil_Continuity.png: corrected saved map inspected in runtime capture"
+    "Saved Blender paving mesh: complete garden coil and continuous contact",
+    "Previews/Snake-Path.png: corrected imported scene inspected in runtime capture"
   ]
 }

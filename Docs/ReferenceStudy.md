@@ -1,6 +1,6 @@
 # Geisel Library 与 Snake Path：场景参考研究
 
-核实日期：2026-09-30（America/Los_Angeles）。建筑与项目的正确拼写均为 **Geisel Library**；项目目录为 `D:/Projects/GeiselLibrary`。本文件依据公开建筑资料和照片整理，区分已证实事实与重建时的推定。
+核实日期：2026-09-30（America/Los_Angeles）。本文件依据公开建筑资料和照片整理 Geisel Library 与 Snake Path 的复原依据，区分已证实事实与重建时的推定。
 
 ## 已核实的建筑特征
 

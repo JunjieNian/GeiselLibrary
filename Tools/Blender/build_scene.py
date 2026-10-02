@@ -329,7 +329,9 @@ if opt.render:
         for device in pref.devices:device.use=device.type!='CPU'
         scene.cycles.device='GPU'
     except Exception as e:print('GPU setup:',e)
+    preview_dir=ROOT/'.cache'/'previews'/'blender'
+    preview_dir.mkdir(parents=True,exist_ok=True)
     for spec in [CAMERAS[0],CAMERAS[3],CAMERAS[4]]:
-        scene.camera=bpy.data.objects[spec['name']];scene.render.filepath=str(ROOT/'Previews'/(spec['name']+'.png'))
+        scene.camera=bpy.data.objects[spec['name']];scene.render.filepath=str(preview_dir/(spec['name']+'.png'))
         bpy.ops.render.render(write_still=True)
     print('GEISEL_RENDER_COMPLETE',flush=True)

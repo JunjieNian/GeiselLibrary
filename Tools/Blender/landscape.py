@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from mathutils import Vector, Matrix
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'work'/'blender_python'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'.cache'/'blender-python'))
 try:
     from shapely import constrained_delaunay_triangles, set_precision
     from shapely.geometry import Polygon, Point, box

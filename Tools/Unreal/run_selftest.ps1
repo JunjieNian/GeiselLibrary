@@ -9,4 +9,20 @@ Write-Output "Geisel self-test process: $($Process.Id). Log: $Log"
 $Process.WaitForExit()
 if($Process.ExitCode -ne 0){throw 'Runtime self-test process failed'}
 if(-not(Select-String -LiteralPath $Log -SimpleMatch '[GEISEL_SELFTEST] ALL_PASSED' -Quiet)){throw 'Runtime assertions did not all pass'}
-Write-Output 'All runtime assertions passed. Captures: UnrealProject/Saved/Screenshots/Geisel.'
+$PreviewNames = [ordered]@{
+    '01_East_Canyon_Daylight.png' = 'Library-Daylight.png'
+    '03_East_Canyon_Golden_Hour.png' = 'Library-Golden-Hour.png'
+    '04_Library_Plaza.png' = 'South-Elevation.png'
+    '05_East_Canyon_Blue_Hour.png' = 'Library-Blue-Hour.png'
+    '06_Interactive_Walk.png' = 'Walking.png'
+    '07_Aerial_Site.png' = 'Site-Aerial.png'
+    '08_Snake_Coil_Continuity.png' = 'Snake-Path.png'
+}
+$PreviewDirectory = Join-Path $ProjectRoot 'Previews'
+New-Item -ItemType Directory -Path $PreviewDirectory -Force | Out-Null
+foreach ($CaptureName in $PreviewNames.Keys) {
+    $CapturePath = Join-Path $ProjectRoot (Join-Path 'UnrealProject\Saved\Screenshots\Geisel' $CaptureName)
+    if(-not (Test-Path -LiteralPath $CapturePath)){throw "Runtime capture missing: $CaptureName"}
+    Copy-Item -LiteralPath $CapturePath -Destination (Join-Path $PreviewDirectory $PreviewNames[$CaptureName]) -Force
+}
+Write-Output 'All runtime assertions passed. Curated runtime previews refreshed in Previews/.'

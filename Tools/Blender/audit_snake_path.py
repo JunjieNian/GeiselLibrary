@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
-sys.path.insert(0,str(ROOT/'work'/'blender_python'))
+sys.path.insert(0,str(ROOT/'.cache'/'blender-python'))
 from shapely import set_precision
 from shapely.geometry import Polygon,Point,box
 from shapely.ops import unary_union

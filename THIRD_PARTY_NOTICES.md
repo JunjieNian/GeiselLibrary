@@ -13,7 +13,11 @@ Poly Haven makes these assets available under [CC0 1.0 Universal](https://creati
 
 UC San Diego, Stuart Collection, the original Pereira report, ArchDaily and the credited photographers supplied the architectural and landscape references. Their photographs and drawings are **not distributed in this repository**. The local research copies remain outside version control. [References/README.md](References/README.md) records source links, credits and known license information, including a separately attributed CC BY-SA photograph.
 
-The reconstructed geometry, procedural materials, vegetation, scene scripts and screenshots were created for this project. The scene depicts Geisel Library and Alexis Smith's Snake Path; the rights in the depicted architecture and artwork remain with their respective rights holders. Public repository access does not assign a blanket license to the project. No license for the project-created files has been selected.
+The reconstructed geometry, procedural materials, vegetation, scene scripts and screenshots were created for this project. Original project code and project-authored assets are released under the [MIT License](LICENSE). This license covers the project's contributions; rights in the depicted Geisel Library architecture and Alexis Smith's Snake Path remain with their respective rights holders.
+
+## Modeling dependency
+
+The rebuild workflow downloads Shapely 2.1.2 into an ignored dependency cache. Shapely uses the [BSD 3-Clause License](https://github.com/shapely/shapely/blob/2.1.2/LICENSE.txt); its GEOS dependency retains its own license. Dependency binaries are not distributed in this repository.
 
 ## Software requirements
 

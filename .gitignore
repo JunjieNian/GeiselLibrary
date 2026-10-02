@@ -8,6 +8,7 @@ Tools/Unreal/MigrationBackup/
 References/*
 !References/README.md
 work/
+.cache/
 **/__pycache__/
 *.blend1
 *.blend2
