@@ -176,7 +176,7 @@ void AGeiselCharacter::SetView(int32 Index)
         SetActorLocation(It->GetActorLocation()-FVector(0,0,64),false,nullptr,ETeleportType::TeleportPhysics);
         if(Controller) Controller->SetControlRotation(It->GetActorRotation());
         const TCHAR* Names[]={TEXT("EAST CANYON"),TEXT("SNAKE PATH"),TEXT("SOUTH ELEVATION"),TEXT("ABOVE THE EUCALYPTUS")};
-        Status=Names[Index]; ViewIndex=Index;
+        Status=Index>=0 && Index<UE_ARRAY_COUNT(Names)?Names[Index]:TEXT("SNAKE COIL"); ViewIndex=Index;
         Camera->SetFieldOfView(Index==2?67:63);
         UE_LOG(LogTemp,Display,TEXT("[GEISEL] VIEW=%d position=%s"),Index+1,*GetActorLocation().ToCompactString());
         return;
@@ -256,7 +256,28 @@ void AGeiselCharacter::SelfTest(float DT)
     }
     else if(TestPhase==70 && TestTime>.3f) { SetView(3); bPhoto=true; TestTime=0; TestPhase=8; }
     else if(TestPhase==8 && TestTime>7) { Capture(TEXT("07_Aerial_Site")); TestTime=0; TestPhase=9; }
-    else if(TestPhase==9 && TestTime>3)
+    else if(TestPhase==9 && TestTime>1)
+    {
+        int32 Probes=0, PavedHits=0;
+        for(TActorIterator<AActor> It(GetWorld());It;++It)
+        {
+            if(!It->ActorHasTag(TEXT("SnakePavingProbe"))) continue;
+            ++Probes;
+            const FVector Point=It->GetActorLocation();
+            FHitResult Hit;
+            FCollisionQueryParams Params(SCENE_QUERY_STAT(SnakeCoilPaving),true,this);
+            if(GetWorld()->LineTraceSingleByChannel(Hit,Point+FVector(0,0,150),Point-FVector(0,0,150),ECC_Visibility,Params)
+                && Hit.GetActor() && Hit.GetActor()->ActorHasTag(TEXT("GeiselSnakePaving"))) ++PavedHits;
+        }
+        Check(Probes>=30 && PavedHits==Probes,TEXT("snake_coil_continuous_paving"),FString::Printf(TEXT("%d/%d paved probes"),PavedHits,Probes));
+        SetView(4); TestTime=0; TestPhase=10;
+    }
+    else if(TestPhase==10 && TestTime>8)
+    {
+        Check(ViewIndex==4,TEXT("snake_coil_review_view"));
+        Capture(TEXT("08_Snake_Coil_Continuity")); TestTime=0; TestPhase=11;
+    }
+    else if(TestPhase==11 && TestTime>3)
     {
         UE_LOG(LogTemp,Display,TEXT("[GEISEL_SELFTEST] %s"),bTestFailed?TEXT("FAILED"):TEXT("ALL_PASSED")); Exit(); bTest=false;
     }

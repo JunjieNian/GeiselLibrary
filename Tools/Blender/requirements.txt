@@ -1,0 +1,2 @@
+# Planar unions and clipping for Snake Path's touching coil.
+shapely==2.1.2

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "source": "Saved GeiselLibrary.blend paving meshes",
+  "connected_paving_regions": 1,
+  "garden_openings": 1,
+  "garden_opening_area_m2": 62.15069467940002,
+  "paving_area_m2": 477.4456584780011,
+  "overlapping_grout_area_m2": -1.4438228390645236e-11,
+  "upward_facing_slate_triangles": 16497,
+  "overlapping_coil_slate_area_m2": 0.001016219657884676,
+  "coil_centerline_probes": 62,
+  "all_coil_probes_on_paving": true,
+  "reference": "Stuart Collection smith-a-02.jpg and smith-a-01.jpg"
+}

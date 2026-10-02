@@ -278,6 +278,7 @@ CAMERAS=[
     {'name':'02_GardenOfEden','position':[87,-20,12.0],'target':[0,0,24],'lens':30},
     {'name':'03_SouthElevation','position':[75,-110,28],'target':[0,0,24],'lens':49},
     {'name':'04_SiteAerial','position':[173,-142,127],'target':[48,0,12],'lens':43},
+    {'name':'05_SnakePath_Coil','position':[38,-24,34],'target':[66,-5,7],'lens':45},
 ]
 for spec in CAMERAS:
     data=bpy.data.cameras.new(spec['name']);cam=bpy.data.objects.new(spec['name'],data);bpy.context.collection.objects.link(cam)
@@ -328,7 +329,7 @@ if opt.render:
         for device in pref.devices:device.use=device.type!='CPU'
         scene.cycles.device='GPU'
     except Exception as e:print('GPU setup:',e)
-    for spec in [CAMERAS[0],CAMERAS[3]]:
+    for spec in [CAMERAS[0],CAMERAS[3],CAMERAS[4]]:
         scene.camera=bpy.data.objects[spec['name']];scene.render.filepath=str(ROOT/'Previews'/(spec['name']+'.png'))
         bpy.ops.render.render(write_still=True)
     print('GEISEL_RENDER_COMPLETE',flush=True)

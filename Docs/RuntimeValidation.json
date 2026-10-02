@@ -10,8 +10,9 @@
     "collision_meshes": 44,
     "level": "/Game/Geisel/Maps/L_GeiselLibrary",
     "source": "SourceAssets/GeiselSite.fbx",
-    "source_sha256": "1a268b672f476d7e49804454c8c230a59fcd4330924dd3a78537be9553b87b06",
-    "camera_count": 4
+    "source_sha256": "7ddd7879654c63b4d5a480b9f89a618262a2314443da70a0fcaa1b6cf9dbc096",
+    "camera_count": 5,
+    "coil_probe_count": 62
   },
   "selftest_assertions": [
     "PASS initial_view",
@@ -20,16 +21,12 @@
     "PASS golden_hour",
     "PASS blue_hour",
     "PASS ground_trace",
-    "PASS walk_grounded V(X=14106.04, Y=-2616.30, Z=99.52)",
+    "PASS walk_grounded V(X=14111.62, Y=-2618.89, Z=89.18)",
     "PASS walk_movement",
     "PASS photo_toggle",
+    "PASS snake_coil_continuous_paving 62/62 paved probes",
+    "PASS snake_coil_review_view",
     "ALL_PASSED"
-  ],
-  "visible_window_checks": [
-    "view 2: Snake Path",
-    "F: grounded walking",
-    "mouse: view changed",
-    "L: golden hour and blue hour"
   ],
   "screenshots": [
     "UE_01_East_Canyon_Daylight.png",
@@ -38,6 +35,17 @@
     "UE_04_Library_Plaza.png",
     "UE_05_East_Canyon_Blue_Hour.png",
     "UE_06_Interactive_Walk.png",
-    "UE_07_Aerial_Site.png"
+    "UE_07_Aerial_Site.png",
+    "UE_08_Snake_Coil_Continuity.png"
+  ],
+  "previous_visible_window_checks": [
+    "view 2: Snake Path",
+    "F: grounded walking",
+    "mouse: view changed",
+    "L: golden hour and blue hour"
+  ],
+  "current_scene_visual_review": [
+    "Blender 05_SnakePath_Coil.png: complete garden coil, continuous contact, no broken stub",
+    "Unreal UE_08_Snake_Coil_Continuity.png: corrected saved map inspected in runtime capture"
   ]
 }

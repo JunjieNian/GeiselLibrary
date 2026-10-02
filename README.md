@@ -103,4 +103,6 @@ $env:GEISEL_UNREAL_ROOT = 'D:\EpicGames\UE_5.7'
 
 Blender 重建脚本可用 `-BlenderExe '自己的 blender.exe 路径'`；Unreal 脚本可用 `-UnrealRoot '自己的 UE_5.7 目录'`。修改几何后应重新导入，运行 `build_and_setup.ps1` 时省略 `-SkipSceneImport`。
 
+Blender 重建脚本首次运行会为随附的 Python 准备 `Shapely 2.1.2`，安装到项目内的 `work/blender_python/`，用于合并 Snake Path 盘绕相接处的路面与裁剪重叠石板。桌面游览不需要这个建模依赖。`Tools/Blender/audit_snake_path.py` 可回读保存后的模型，检查花园围合、路面连续性和朝向；对应记录为 [Docs/SnakePathValidation.json](Docs/SnakePathValidation.json)。
+
 验证结果与已知边界见 [Docs/Validation.md](Docs/Validation.md)，模型检查见 [Docs/GeometryValidation.json](Docs/GeometryValidation.json)，最终导入与运行断言见 [Docs/RuntimeValidation.json](Docs/RuntimeValidation.json)。

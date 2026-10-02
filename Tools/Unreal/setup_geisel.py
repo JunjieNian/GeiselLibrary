@@ -204,6 +204,8 @@ def build_level(meshes, materials):
         nanite.set_editor_property("enabled", False)
         mesh.set_editor_property("nanite_settings", nanite)
         actor=spawn(unreal.StaticMeshActor,name)
+        if 'ART_SnakePath' in name:
+            actor.set_editor_property('tags',[unreal.Name('GeiselGenerated'),unreal.Name('GeiselSnakePaving')])
         component=actor.static_mesh_component
         component.set_static_mesh(mesh)
         component.set_collision_profile_name("BlockAll" if collision else "NoCollision")
@@ -237,9 +239,12 @@ def build_level(meshes, materials):
     setprop(fog_component,"fog_max_opacity",.65)
     setprop(fog_component,"start_distance",15000)
     cameras=MANIFEST["cameras"]
-    for i, spec in enumerate(cameras[:4]):
+    for i, spec in enumerate(cameras):
         actor=spawn(unreal.TargetPoint,"View_"+spec["name"],vec(spec["position"]),camera_rotation(spec["position"],spec["target"]))
         actor.set_editor_property("tags",[unreal.Name("GeiselGenerated"),unreal.Name("View{}".format(i+1))])
+    for i, point in enumerate(MANIFEST['landscape'].get('coil_probe_points',[])):
+        probe=spawn(unreal.TargetPoint,'SnakePavingProbe_%03d'%i,vec(point))
+        probe.set_editor_property('tags',[unreal.Name('GeiselGenerated'),unreal.Name('SnakePavingProbe')])
     walk_spec=MANIFEST.get("landscape",{}).get("walk_start",[94,-3,3])
     walk=spawn(unreal.TargetPoint,"SnakePath_WalkStart",vec(walk_spec))
     walk.set_editor_property("tags",[unreal.Name("GeiselGenerated"),unreal.Name("WalkStart")])
@@ -248,7 +253,7 @@ def build_level(meshes, materials):
     world.get_world_settings().set_editor_property("default_game_mode",unreal.load_class(None,"/Script/GeiselExplorer.GeiselGameMode"))
     levels.save_current_level()
     unreal.EditorAssetLibrary.save_directory(BASE,only_if_is_dirty=False,recursive=True)
-    report={"mesh_count":len(meshes),"material_count":len(materials),"bound_material_slots":total_slots,"collision_meshes":collision_count,"level":LEVEL,"source":str(SOURCE),"source_sha256":hashlib.sha256(SOURCE.read_bytes()).hexdigest(),"camera_count":len(cameras[:4])}
+    report={"mesh_count":len(meshes),"material_count":len(materials),"bound_material_slots":total_slots,"collision_meshes":collision_count,"level":LEVEL,"source":str(SOURCE),"source_sha256":hashlib.sha256(SOURCE.read_bytes()).hexdigest(),"camera_count":len(cameras),'coil_probe_count':len(MANIFEST['landscape'].get('coil_probe_points',[]))}
     (ROOT/"UnrealProject"/"Saved"/"GeiselSetupReport.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
     log("SETUP_COMPLETE "+json.dumps(report))
 

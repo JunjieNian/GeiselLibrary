@@ -17,11 +17,18 @@
 ## 证据文件
 
 - `GeometryValidation.json`：保存后的 Blender 文件回读结果。
+- `SnakePathValidation.json`：保存后的蛇路网格检查，包含单块连续路面、一个花园开口、朝向、盘绕处重复面积和 62 个路面采样点。
 - `RuntimeValidation.json`：公开保存的最终导入报告和自动运行断言摘要；完整本机日志不上传。
 - `../UnrealProject/Saved/GeiselSetupReport.json`：模型导入数量、资源路径与 FBX 校验值。
 - `../UnrealProject/Saved/Logs/GeiselSelfTest.log`：包含 `[GEISEL_SELFTEST] ALL_PASSED`。
 - `../UnrealProject/Saved/Screenshots/Geisel/`：四个视角、日间/傍晚/暮色和步行界面的实际运行截图。
 - `../Previews/`：Blender 静态预览与最终运行截图。
+
+## Snake Path 盘绕修正（2026-10-01）
+
+按 `References/smith-a-02.jpg` 的实景照片与 `smith-a-01.jpg` 的平面图修正花园盘绕段。原控制点顺序使蛇身在相接处两次急折回自身，导致路面翻折、断头和相互穿插。新的路径沿完整圆圈平顺绕行，相接处合并铺装轮廓、裁剪重叠鳞片；边线沿合并后的外周和花园内周生成。
+
+保存后的 Blender 网格检查确认：一块连续的路面围合一个约 62.15 平方米的花园开口，路面三角形朝上，62 个盘绕中心线采样点均位于铺装内。Unreal 自测对同一组采样点做射线检测，要求命中蛇路铺装而不是下方裸土地形，并生成 `UE_08_Snake_Coil_Continuity.png` 近景。可编辑 Blender、FBX、GLB、Unreal 网格和关卡一起更新；详细运行结果见 `RuntimeValidation.json`。
 
 ## 当前边界
 

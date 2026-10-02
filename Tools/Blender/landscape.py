@@ -9,12 +9,26 @@ All visible details are mesh geometry and work without texture downloads.
 import bpy
 import math
 import random
+import bisect
+import sys
+from pathlib import Path
 from mathutils import Vector, Matrix
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'work'/'blender_python'))
+try:
+    from shapely import constrained_delaunay_triangles, set_precision
+    from shapely.geometry import Polygon, Point, box
+    from shapely.ops import unary_union
+    from shapely.strtree import STRtree
+except ImportError as exc:
+    raise RuntimeError('Run Tools/Blender/rebuild_scene.ps1 to prepare the geometry dependencies.') from exc
 
 SEED = 1992
 PATH_WIDTH = 3.048
 PATH_DESIGN_LENGTH = 170.688
 PATH_POINTS = []
+PATH_NORMALS = []
+PATH_SURFACE_REPORT = {}
 METADATA = {}
 RNG = random.Random(SEED)
 GARDEN_CENTER = (67.2, -4.9)
@@ -148,12 +162,14 @@ def resample(points,spacing=.24):
 
 
 def make_path_points():
-    # Traced from the Stuart Collection's original plan, smith-a-01.jpg.
-    # Image top is library/west; image right is north. Entrance and exit of
-    # the almost-complete coil pass close together without forming a fork.
+    # Photo smith-a-02.jpg and plan smith-a-01.jpg: the body curls around
+    # Eden and touches itself tangentially on its west side. Follow the
+    # bottom, east and top of the coil before continuing downhill; the old
+    # reversed arc doubled back into two tight hairpins at this contact.
+    # Image top is library/west; image right is north.
     trace=[(168,169),(174,189),(177,211),(174,229),(165,247),(160,266),
-           (164,250),(179,244),(195,250),(205,263),(202,276),(190,286),
-           (175,284),(163,275),(162,285),(170,302),(188,316),(201,339),
+           (164,279),(177,287),(191,285),(202,277),(205,264),(199,251),
+           (186,244),(172,246),(161,256),(158,270),(162,285),(170,302),(188,316),(201,339),
            (226,349),(250,350),(271,362),(284,382),(299,400),(305,424),
            (298,450),(291,472),(295,493),(296,516),(291,537),(293,559),(301,575)]
     raw=[(py-169,px-168) for px,py in trace]
@@ -168,11 +184,15 @@ def path_distance(x,y):
 
 
 def ribbon_point(s,t,path,cum):
-    import bisect
     i=max(0,min(len(path)-2,bisect.bisect_right(cum,s)-1))
     seg=max(.00001,cum[i+1]-cum[i]);f=(s-cum[i])/seg
-    a=path[i];b=path[i+1];dx=b[0]-a[0];dy=b[1]-a[1]
-    x=a[0]+dx*f-dy/seg*t;y=a[1]+dy*f+dx/seg*t
+    a=path[i];b=path[i+1]
+    # Interpolated vertex frames keep neighboring tiles continuous across
+    # sample boundaries; a per-segment normal leaves cracks on curves.
+    nx=PATH_NORMALS[i][0]*(1-f)+PATH_NORMALS[i+1][0]*f
+    ny=PATH_NORMALS[i][1]*(1-f)+PATH_NORMALS[i+1][1]*f
+    size=math.hypot(nx,ny);nx/=size;ny/=size
+    x=a[0]+(b[0]-a[0])*f+nx*t;y=a[1]+(b[1]-a[1])*f+ny*t
     # Subtle convex snake back, around four centimetres across the width.
     z=terrain_height(x,y)+.085+.038*max(0,1-(t/(PATH_WIDTH*.5))**2)
     return (x,y,z)
@@ -270,11 +290,62 @@ def create_paving(m):
 
 
 def create_snake(m):
+    global PATH_SURFACE_REPORT
     cum=[0.0]
     for a,b in zip(PATH_POINTS,PATH_POINTS[1:]):cum.append(cum[-1]+math.hypot(b[0]-a[0],b[1]-a[1]))
     mb=MeshBatch('ART_SnakePath_HexagonalSlateScales',m['slate'])
     mortar=MeshBatch('ART_SnakePath_DarkMortar',[m['mortar']])
     width=PATH_WIDTH*.5
+
+    def half_width(s):
+        return width*min(1.0,max(.06,(cum[-1]-s)/7))
+
+    # The real coil contacts the adjacent body. Union the paving footprint
+    # before making its surface, so it has one continuous boundary and one
+    # garden opening instead of overlapping strips and false internal edges.
+    cells=[]
+    for i in range(len(PATH_POINTS)-1):
+        s0,s1=cum[i:i+2];w0=half_width(s0);w1=half_width(s1)
+        cells.append(set_precision(Polygon([ribbon_point(s0,-w0,PATH_POINTS,cum)[:2],
+                              ribbon_point(s1,-w1,PATH_POINTS,cum)[:2],
+                              ribbon_point(s1,w1,PATH_POINTS,cum)[:2],
+                              ribbon_point(s0,w0,PATH_POINTS,cum)[:2]]),1e-6))
+    assert all(cell.is_valid and cell.area>0 for cell in cells), 'Folded snake ribbon cell'
+    footprint=unary_union(cells)
+    assert footprint.geom_type=='Polygon' and footprint.is_valid, 'Snake paving must be connected'
+    assert len(footprint.interiors)==1, 'Eden must be enclosed by one complete coil'
+    garden=Polygon(footprint.interiors[0])
+    assert garden.contains(Point(GARDEN_CENTER)), 'Eden planting must remain inside the coil'
+    boundary=footprint.boundary
+    tree=STRtree(cells)
+
+    def surface_vertex(x,y,lift=0):
+        # Use one height field on both arms at the contact, including the
+        # original subtle crowned profile. This prevents depth flicker.
+        d=min(width,boundary.distance(Point(x,y)))
+        crown=.038*(1-(1-d/width)**2)
+        return (x,y,terrain_height(x,y)+.085+crown+lift)
+
+    def emit_surface(batch,shape,mi=0,lift=0):
+        if shape.is_empty or shape.area<1e-9:return
+        for triangle in constrained_delaunay_triangles(shape).geoms:
+            xy=list(triangle.exterior.coords)[:-1]
+            a,b,c=xy
+            if (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])<0:
+                xy.reverse()
+            batch.face([surface_vertex(x,y,lift) for x,y in xy],mi)
+
+    # Grout is tessellated in small ground-following cells; one large polygon
+    # would bridge the hillside and clip through the terrain at the coil.
+    minx,miny,maxx,maxy=footprint.bounds
+    step=.45
+    for ix in range(math.floor(minx/step),math.ceil(maxx/step)):
+        for iy in range(math.floor(miny/step),math.ceil(maxy/step)):
+            patch=box(ix*step,iy*step,(ix+1)*step,(iy+1)*step)
+            if footprint.intersects(patch):
+                emit_surface(mortar,footprint.intersection(patch),lift=-.012)
+    mortar.finish()
+
     # Tight elongated hexagonal tessellation in curvilinear coordinates.
     r=.237;h=r*math.sqrt(3);dl=1.5*r
     row_count=int(cum[-1]/dl)+1
@@ -299,26 +370,30 @@ def create_snake(m):
             dark=abs(t)<(.17+diamond*1.14)
             if dark:idx=RNG.choice([0,0,0,1])
             else:idx=RNG.choices([1,2,3,4],[.14,.42,.30,.14])[0]
-            mb.face([ribbon_point(ss,tt,PATH_POINTS,cum) for ss,tt in st],idx)
+            tile=Polygon([ribbon_point(ss,tt,PATH_POINTS,cum)[:2] for ss,tt in st])
+            if tile.area<1e-8:continue
+            if not tile.is_valid:tile=tile.buffer(0)
+            tile=tile.intersection(footprint)
+            # Earlier paving owns the contact region. Clip the returning
+            # coil against that full strip (including its grout), not against
+            # individual slate tiles, leaving no coincident surfaces.
+            earlier=[cells[int(j)] for j in tree.query(tile,predicate='intersects')
+                     if cum[int(j)+1]<s-PATH_WIDTH*3]
+            if earlier:tile=tile.difference(unary_union(earlier))
+            emit_surface(mb,tile,idx)
     tiles=mb.finish();tiles['artist']='Alexis Smith';tiles['work']='Snake Path (1992)'
     tiles['documented_dimensions_m']='170.688 long by 3.048 wide'
     tiles['pattern']='Three slate families: charcoal, warm grey and pale sandstone; elongated hexagon scales'
-    for i in range(len(PATH_POINTS)-1):
-        s0=cum[i];s1=cum[i+1]
-        for t0,t1 in [(-width,width)]:
-            f=[ribbon_point(s0,t0,PATH_POINTS,cum),ribbon_point(s1,t0,PATH_POINTS,cum),
-               ribbon_point(s1,t1,PATH_POINTS,cum),ribbon_point(s0,t1,PATH_POINTS,cum)]
-            mortar.face([(x,y,z-.012) for x,y,z in f])
-    mortar.finish()
     # Steel/stone-dark perimeter is visually as restrained as the real narrow edge.
     edging=MeshBatch('ART_SnakePath_ThinDarkPerimeter',[m['edging']])
-    for sign in (-1,1):
-        for i in range(len(PATH_POINTS)-1):
-            if cum[i]>cum[-1]-7:continue
-            a=ribbon_point(cum[i],sign*width,PATH_POINTS,cum)
-            b=ribbon_point(cum[i+1],sign*width,PATH_POINTS,cum)
-            edging.cylinder(a,b,.022,mi=0,sides=4)
+    for ring in [footprint.exterior,*footprint.interiors]:
+        for a,b in zip(ring.coords, list(ring.coords)[1:]):
+            edging.cylinder(surface_vertex(*a),surface_vertex(*b),.022,mi=0,sides=4)
     edging.finish()
+    PATH_SURFACE_REPORT={'connected_paving_regions':1,'garden_openings':1,
+                         'garden_opening_area_m2':garden.area,'paving_area_m2':footprint.area,
+                         'surface_join':'unioned tangent coil; overlapping tiles clipped',
+                         'reference':'smith-a-02.jpg and smith-a-01.jpg'}
     # Head broadens into the forum.  Eyes and tongue are inlaid flush with paving.
     head=MeshBatch('ART_SnakeHead_InlaidSlate',[m['slate'][2],m['slate'][0],m['slate'][3],m['head_red']])
     cx=40;cy=-10
@@ -572,7 +647,7 @@ def create_site_details(m):
 
 
 def build_landscape():
-    global COLLECTION,PATH_POINTS,METADATA,RNG
+    global COLLECTION,PATH_POINTS,PATH_NORMALS,METADATA,RNG
     RNG=random.Random(SEED)
     COLLECTION=bpy.data.collections.get('02_Landscape_SnakePath')
     if COLLECTION is None:
@@ -619,6 +694,11 @@ def build_landscape():
     m['metal']=material('CAMPUS_DarkBronze',(.12,.14,.13),.47)
     m['lamp']=material('CAMPUS_LanternOpal',(.78,.765,.63),.5)
     PATH_POINTS=make_path_points()
+    PATH_NORMALS=[]
+    for i,p in enumerate(PATH_POINTS):
+        a=PATH_POINTS[max(0,i-1)];b=PATH_POINTS[min(len(PATH_POINTS)-1,i+1)]
+        dx=b[0]-a[0];dy=b[1]-a[1];length=math.hypot(dx,dy)
+        PATH_NORMALS.append((-dy/length,dx/length))
     create_terrain(m['soil'])
     create_paving(m)
     length=create_snake(m)
@@ -630,6 +710,7 @@ def build_landscape():
         'source':'UCSD Stuart Collection official Snake Path photographs, Main_smith-a-01..06.jpg',
         'artist':'Alexis Smith','year':1992,'documented_length_m':PATH_DESIGN_LENGTH,
         'modeled_centerline_plan_length_m':length,'documented_width_m':PATH_WIDTH,
+        'paving_validation':PATH_SURFACE_REPORT,
         'terrain_is_surveyed':False,'garden_center':(*GARDEN_CENTER,terrain_height(*GARDEN_CENTER)),
         'book_position':(*BOOK_POSITION,terrain_height(*BOOK_POSITION)),
         'camera_viewpoints':{
@@ -639,6 +720,7 @@ def build_landscape():
             'Paradise_Lost':{'location':(BOOK_POSITION[0]+5,BOOK_POSITION[1]+1,terrain_height(*BOOK_POSITION)+1.65),'target':(*BOOK_POSITION,terrain_height(*BOOK_POSITION)+1.2)},
             'East_Aerial':{'location':(145,-103,82),'target':(22,-3,18)}},
         'walk_start':(145,28,terrain_height(145,28)+1.7),
+        'coil_probe_points':[(x,y,terrain_height(x,y)+.1) for x,y in PATH_POINTS[::4] if 60<x<75],
         'path_points':[(x,y,terrain_height(x,y)+.1) for x,y in PATH_POINTS[::4]]}
     COLLECTION['documentation']='Official dimensions, photo-guided path turns and landform; editable mesh reconstruction.'
     print('LANDSCAPE_COMPLETE',len(COLLECTION.objects),'objects',round(length,3),'m snake centreline')
