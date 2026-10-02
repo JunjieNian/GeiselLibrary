@@ -1,0 +1,17 @@
+UnrealProject/Binaries/
+UnrealProject/DerivedDataCache/
+UnrealProject/Intermediate/
+UnrealProject/Intermediate_PreRename/
+UnrealProject/Saved/
+Tools/Unreal/MigrationBackup/
+# Research photographs and drawings remain local; publish provenance only.
+References/*
+!References/README.md
+work/
+**/__pycache__/
+*.blend1
+*.blend2
+.vs/
+*.sln
+*.suo
+*.VC.db

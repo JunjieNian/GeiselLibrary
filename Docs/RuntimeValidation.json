@@ -1,0 +1,43 @@
+{
+  "verified_date": "2026-10-01",
+  "engine": "Unreal Engine 5.7",
+  "platform": "Windows 64-bit",
+  "gpu": "NVIDIA GeForce RTX 4070 Laptop",
+  "import": {
+    "mesh_count": 49,
+    "material_count": 51,
+    "bound_material_slots": 82,
+    "collision_meshes": 44,
+    "level": "/Game/Geisel/Maps/L_GeiselLibrary",
+    "source": "SourceAssets/GeiselSite.fbx",
+    "source_sha256": "1a268b672f476d7e49804454c8c230a59fcd4330924dd3a78537be9553b87b06",
+    "camera_count": 4
+  },
+  "selftest_assertions": [
+    "PASS initial_view",
+    "PASS flight_movement",
+    "PASS view_switch",
+    "PASS golden_hour",
+    "PASS blue_hour",
+    "PASS ground_trace",
+    "PASS walk_grounded V(X=14106.04, Y=-2616.30, Z=99.52)",
+    "PASS walk_movement",
+    "PASS photo_toggle",
+    "ALL_PASSED"
+  ],
+  "visible_window_checks": [
+    "view 2: Snake Path",
+    "F: grounded walking",
+    "mouse: view changed",
+    "L: golden hour and blue hour"
+  ],
+  "screenshots": [
+    "UE_01_East_Canyon_Daylight.png",
+    "UE_02_Snake_Path_Daylight.png",
+    "UE_03_East_Canyon_Golden_Hour.png",
+    "UE_04_Library_Plaza.png",
+    "UE_05_East_Canyon_Blue_Hour.png",
+    "UE_06_Interactive_Walk.png",
+    "UE_07_Aerial_Site.png"
+  ]
+}
