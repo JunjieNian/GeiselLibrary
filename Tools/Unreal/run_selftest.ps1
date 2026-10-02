@@ -26,3 +26,16 @@ foreach ($CaptureName in $PreviewNames.Keys) {
     Copy-Item -LiteralPath $CapturePath -Destination (Join-Path $PreviewDirectory $PreviewNames[$CaptureName]) -Force
 }
 Write-Output 'All runtime assertions passed. Curated runtime previews refreshed in Previews/.'
+$ReviewNames = [ordered]@{
+    '09_South_Entrance_Clearance.png' = 'South-Entrance.png'
+    '10_Snake_Approach_North.png' = 'Snake-Approach-North.png'
+    '11_Snake_Approach_South.png' = 'Snake-Approach-South.png'
+}
+$ReviewDirectory = Join-Path $ProjectRoot '.cache\validation\site-details'
+New-Item -ItemType Directory -Path $ReviewDirectory -Force | Out-Null
+foreach ($CaptureName in $ReviewNames.Keys) {
+    $CapturePath = Join-Path $ProjectRoot (Join-Path 'UnrealProject\Saved\Screenshots\Geisel' $CaptureName)
+    if(-not (Test-Path -LiteralPath $CapturePath)){throw "Detail review capture missing: $CaptureName"}
+    Copy-Item -LiteralPath $CapturePath -Destination (Join-Path $ReviewDirectory $ReviewNames[$CaptureName]) -Force
+}
+Write-Output 'Entrance and Snake Path approach review captures refreshed in .cache/validation/site-details/.'

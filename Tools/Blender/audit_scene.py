@@ -14,9 +14,14 @@ assert abs(top-43.528)<.4,top
 assert len(objects)>=40,len(objects)
 assert all(len(o.data.uv_layers)>0 for o in objects)
 assert all(len(o.data.vertices)>0 and len(o.data.polygons)>0 for o in objects)
+assert 'CAMPUS_LowConcreteGardenEdges' not in bpy.data.objects, 'Unsupported approach frames remain'
+detail=bpy.data.objects['Building_GroundDetail']
+for x in (-8,8):
+    hit,*_=detail.ray_cast(Vector((x,-23.9,11.3)),Vector((0,0,-1)),distance=1.5)
+    assert not hit, ('Floating south entrance bollard remains',x)
 manifest=json.loads((ROOT/'SourceAssets'/'scene_manifest.json').read_text())
 assert abs(manifest['landscape']['modeled_centerline_plan_length_m']-170.688)<.02
-report={'status':'PASS','mesh_objects':len(objects),'triangles_before_modifiers':sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in objects),'tower_floor6_span_m':span,'roof_elevation_m':top,'all_meshes_have_surface_uv':True,'snake_centerline_m':manifest['landscape']['modeled_centerline_plan_length_m'],'source':'GeiselLibrary.blend reopened and inspected'}
+report={'status':'PASS','mesh_objects':len(objects),'triangles_before_modifiers':sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in objects),'tower_floor6_span_m':span,'roof_elevation_m':top,'all_meshes_have_surface_uv':True,'snake_centerline_m':manifest['landscape']['modeled_centerline_plan_length_m'],'south_entrance_floating_bollards_absent':True,'unsupported_snake_approach_frames_absent':True,'source':'GeiselLibrary.blend reopened and inspected'}
 for screen in bpy.data.screens:
     for area in screen.areas:
         if area.type=='VIEW_3D':

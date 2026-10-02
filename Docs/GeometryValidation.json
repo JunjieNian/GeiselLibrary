@@ -1,10 +1,12 @@
 {
   "status": "PASS",
-  "mesh_objects": 48,
-  "triangles_before_modifiers": 2098466,
+  "mesh_objects": 47,
+  "triangles_before_modifiers": 2098406,
   "tower_floor6_span_m": 60.92727851867676,
   "roof_elevation_m": 43.5099983215332,
   "all_meshes_have_surface_uv": true,
   "snake_centerline_m": 170.68800000000013,
+  "south_entrance_floating_bollards_absent": true,
+  "unsupported_snake_approach_frames_absent": true,
   "source": "GeiselLibrary.blend reopened and inspected"
 }

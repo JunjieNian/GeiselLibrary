@@ -105,7 +105,7 @@ Run these steps after modifying the generators:
 
 The Blender step regenerates the editable scene, FBX, GLB, metadata, and validation reports. It prepares **Shapely 2.1.2** in the ignored `.cache/blender-python/` directory to merge the Snake Path coil and clip overlapping slate surfaces. Blender render previews are stored in `.cache/previews/`; the interactive experience does not require these modeling dependencies.
 
-The Unreal step imports the regenerated geometry and saves the level. The self-test checks movement, grounding, viewpoints, lighting, and 62 collision probes around the garden coil, then refreshes the curated runtime images in `Previews/`.
+The Unreal step imports the regenerated geometry and saves the level. The self-test checks movement, grounding, viewpoints, lighting, 62 collision probes around the garden coil, and clearance at the south entrance. It also verifies that the unsupported concrete frames beside the Snake Path approach are absent. Curated runtime images are refreshed in `Previews/`; focused entrance and approach review captures are stored in `.cache/validation/site-details/`.
 
 ## Repository layout
 

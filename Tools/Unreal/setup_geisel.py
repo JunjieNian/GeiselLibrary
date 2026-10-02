@@ -252,6 +252,11 @@ def build_level(meshes, materials):
     world=unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()
     world.get_world_settings().set_editor_property("default_game_mode",unreal.load_class(None,"/Script/GeiselExplorer.GeiselGameMode"))
     levels.save_current_level()
+    # Retired geometry must not survive as an unused asset after regeneration.
+    retired=BASE+'/Geometry/GeiselSite_CAMPUS_LowConcreteGardenEdges'
+    if unreal.EditorAssetLibrary.does_asset_exist(retired):
+        if not unreal.EditorAssetLibrary.delete_asset(retired):
+            raise RuntimeError('Could not retire the unsupported Snake Path approach frames')
     unreal.EditorAssetLibrary.save_directory(BASE,only_if_is_dirty=False,recursive=True)
     report={"mesh_count":len(meshes),"material_count":len(materials),"bound_material_slots":total_slots,"collision_meshes":collision_count,"level":LEVEL,"source":str(SOURCE),"source_sha256":hashlib.sha256(SOURCE.read_bytes()).hexdigest(),"camera_count":len(cameras),'coil_probe_count':len(MANIFEST['landscape'].get('coil_probe_points',[]))}
     (ROOT/"UnrealProject"/"Saved"/"GeiselSetupReport.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
@@ -266,4 +271,5 @@ else:
     mesh_objects=import_meshes()
 import_textures()
 material_map={spec["name"]:material(spec) for spec in MANIFEST["materials"]}
+mesh_objects=[mesh for mesh in mesh_objects if 'CAMPUS_LowConcreteGardenEdges' not in mesh.get_name()]
 build_level(mesh_objects,material_map)

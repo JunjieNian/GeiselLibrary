@@ -637,13 +637,6 @@ def create_site_details(m):
         lamps.cylinder((x,y,z+3.88),(x,y,z+4.19),.125,.12,sides=8)
         b.cylinder((x,y,z+4.23),(x,y,z+4.29),.20,.13,sides=8)
     b.finish(smooth=True);lamps.finish()
-    # Curb-height retaining edges beside the lowered east footpath lawns.
-    retaining=MeshBatch('CAMPUS_LowConcreteGardenEdges',[m['concrete']])
-    for coords in [[(103,14),(96,14),(96,26),(107,26)],[(104,-43),(94,-43),(94,-53),(105,-53)]]:
-        for a,bb in zip(coords,coords[1:]):
-            za=terrain_height(*a);zb=terrain_height(*bb)
-            retaining.face([(a[0],a[1],za),(bb[0],bb[1],zb),(bb[0],bb[1],zb+.32),(a[0],a[1],za+.32)])
-    retaining.finish()
 
 
 def build_landscape():

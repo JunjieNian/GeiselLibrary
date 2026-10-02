@@ -6,6 +6,9 @@
 #include "Engine/Canvas.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
+#include "Engine/StaticMeshActor.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Engine/GameViewportClient.h"
@@ -175,7 +178,7 @@ void AGeiselCharacter::SetView(int32 Index)
         bFly=true; GetCharacterMovement()->SetMovementMode(MOVE_Flying);
         SetActorLocation(It->GetActorLocation()-FVector(0,0,64),false,nullptr,ETeleportType::TeleportPhysics);
         if(Controller) Controller->SetControlRotation(It->GetActorRotation());
-        const TCHAR* Names[]={TEXT("EAST CANYON"),TEXT("SNAKE PATH"),TEXT("SOUTH ELEVATION"),TEXT("ABOVE THE EUCALYPTUS")};
+        const TCHAR* Names[]={TEXT("EAST CANYON"),TEXT("SNAKE PATH"),TEXT("SOUTH ELEVATION"),TEXT("ABOVE THE EUCALYPTUS"),TEXT("SNAKE COIL"),TEXT("SOUTH ENTRANCE REVIEW"),TEXT("NORTH APPROACH REVIEW"),TEXT("SOUTH APPROACH REVIEW")};
         Status=Index>=0 && Index<UE_ARRAY_COUNT(Names)?Names[Index]:TEXT("SNAKE COIL"); ViewIndex=Index;
         Camera->SetFieldOfView(Index==2?67:63);
         UE_LOG(LogTemp,Display,TEXT("[GEISEL] VIEW=%d position=%s"),Index+1,*GetActorLocation().ToCompactString());
@@ -278,6 +281,43 @@ void AGeiselCharacter::SelfTest(float DT)
         Capture(TEXT("08_Snake_Coil_Continuity")); TestTime=0; TestPhase=11;
     }
     else if(TestPhase==11 && TestTime>3)
+    {
+        int32 ClearBollardPositions=0, ApproachFrames=0;
+        for(float X : {-800.0f,800.0f})
+        {
+            FHitResult Hit;
+            FCollisionQueryParams Params(SCENE_QUERY_STAT(SouthEntranceClearance),true,this);
+            if(!GetWorld()->LineTraceSingleByChannel(Hit,FVector(X,2390,1130),FVector(X,2390,980),ECC_Visibility,Params)) ++ClearBollardPositions;
+        }
+        for(TActorIterator<AActor> It(GetWorld());It;++It)
+        {
+            const auto* MeshActor=Cast<AStaticMeshActor>(*It);
+            const UStaticMesh* SiteMesh=nullptr;
+            if(MeshActor) SiteMesh=MeshActor->GetStaticMeshComponent()->GetStaticMesh();
+            if(SiteMesh && SiteMesh->GetName().Contains(TEXT("CAMPUS_LowConcreteGardenEdges"))) ++ApproachFrames;
+        }
+        Check(ClearBollardPositions==2,TEXT("south_entrance_floating_bollards_absent"),FString::Printf(TEXT("%d/2 clear positions"),ClearBollardPositions));
+        Check(ApproachFrames==0,TEXT("unsupported_snake_approach_frames_absent"));
+        SetView(5); TestTime=0; TestPhase=12;
+    }
+    else if(TestPhase==12 && TestTime>7)
+    {
+        Check(ViewIndex==5,TEXT("south_entrance_review_view"));
+        Capture(TEXT("09_South_Entrance_Clearance")); TestTime=0; TestPhase=120;
+    }
+    else if(TestPhase==120 && TestTime>.3f) { SetView(6); TestTime=0; TestPhase=13; }
+    else if(TestPhase==13 && TestTime>7)
+    {
+        Check(ViewIndex==6,TEXT("snake_north_approach_review_view"));
+        Capture(TEXT("10_Snake_Approach_North")); TestTime=0; TestPhase=130;
+    }
+    else if(TestPhase==130 && TestTime>.3f) { SetView(7); TestTime=0; TestPhase=14; }
+    else if(TestPhase==14 && TestTime>7)
+    {
+        Check(ViewIndex==7,TEXT("snake_south_approach_review_view"));
+        Capture(TEXT("11_Snake_Approach_South")); TestTime=0; TestPhase=15;
+    }
+    else if(TestPhase==15 && TestTime>3)
     {
         UE_LOG(LogTemp,Display,TEXT("[GEISEL_SELFTEST] %s"),bTestFailed?TEXT("FAILED"):TEXT("ALL_PASSED")); Exit(); bTest=false;
     }

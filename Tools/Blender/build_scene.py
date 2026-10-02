@@ -216,6 +216,10 @@ for x in [-2.38,-.82,.82,2.38]:
     detail.box((x,-21.30,7.60),(.045,.05,.60),3)
 for k in range(4):
     for t in [-16,-8,8,16]:
+        # The south entrance drops below the terrace. These two positions
+        # have no supporting paving at the terrace height.
+        if k == 3 and abs(t) == 8:
+            continue
         p=(23.9,t,10.50)
         for _ in range(k):p=(-p[1],p[0],p[2])
         detail.box(p,(.35,.35,1.0),3)
@@ -279,6 +283,9 @@ CAMERAS=[
     {'name':'03_SouthElevation','position':[75,-110,28],'target':[0,0,24],'lens':49},
     {'name':'04_SiteAerial','position':[173,-142,127],'target':[48,0,12],'lens':43},
     {'name':'05_SnakePath_Coil','position':[38,-24,34],'target':[66,-5,7],'lens':45},
+    {'name':'06_SouthEntrance_Review','position':[13,-34,12.5],'target':[0,-23.9,9.2],'lens':34},
+    {'name':'07_SnakeApproach_North_Review','position':[112,8,13],'target':[99,21,3],'lens':34},
+    {'name':'08_SnakeApproach_South_Review','position':[115,-36,13],'target':[100,-47,3],'lens':34},
 ]
 for spec in CAMERAS:
     data=bpy.data.cameras.new(spec['name']);cam=bpy.data.objects.new(spec['name'],data);bpy.context.collection.objects.link(cam)
