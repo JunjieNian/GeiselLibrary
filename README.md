@@ -18,6 +18,8 @@ An editable exterior reconstruction of UC San Diego's Geisel Library and Alexis 
 
 双击 `Open_GeiselLibrary_Blender.cmd` 可以打开完整的可编辑 Blender 场景。Unreal 工程为 `UnrealProject/GeiselExplorer.uproject`。
 
+完成首次编译后，运行 `Tools/Windows/Install_DesktopShortcut.ps1` 可在 Windows 桌面安装 **Geisel Library - Snake Path** 快捷方式，直接进入游览。图标采用图书馆悬挑塔楼、蓝色玻璃和山坡蛇路的主题设计；图标文件和生成记录见 [Assets/Branding](Assets/Branding/)。
+
 ### 从 GitHub 首次获取
 
 仓库包含主模型、FBX / GLB、Unreal 关卡和全部可编辑源码，大型模型及 Unreal 资源使用 **Git LFS**。安装 [Git LFS](https://git-lfs.com/) 后获取完整资源：
